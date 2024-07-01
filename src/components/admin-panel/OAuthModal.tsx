@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { LogIn, Apple, Key } from "lucide-react";
+import { Mail, Apple, Key } from "lucide-react";
 
 interface OAuthModalProps {
   isOpen: boolean;
@@ -15,21 +15,33 @@ interface OAuthModalProps {
 export function OAuthModal({ isOpen, onClose }: OAuthModalProps) {
   const [email, setEmail] = useState("");
 
-  const handleGoogleLogin = () => {
-    console.log("googlelogin");
-  };
+  const [user, setUser] = useState({ email: '', password: '' });
 
-  const handleAppleLogin = () => {
-    console.log("Githublogin");
-  };
+  const submitForm = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await signIn("credentials", { email: user.email, password: user.password, redirect: true, callbackUrl: "/" });
 
-  const handleSamlSSOLogin = () => {
-    console.log("SamlSSOLogin");
-  };
+    try {
+      const result = await signIn('credentials', { email: user.email, password: user.password, redirect: true, callbackUrl: "/" });
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+    } catch (error) {
 
-  const handleEmailLogin = () => {
-    // Implement email login logic here
-    console.log("Email login with:", email);
+    }
+  }
+
+  const handleGoogleSignIn = () => {
+    signIn('google', { redirect: true, callbackUrl: "/dashboard" });
+  };
+  const handleGithubSignIn = () => {
+    signIn('github', { redirect: true, callbackUrl: "/dashboard" });
+  };
+  const handleFacebookSignIn = () => {
+    signIn('facebook', { redirect: true, callbackUrl: "/dashboard" });
+  };
+  const handleEmailSignIn = () => {
+    signIn('email', { redirect: true, callbackUrl: "/dashboard" });
   };
 
   const buttonStyle = "bg-[#3D3F40] hover:bg-[#000] rounded-full text-white font-semibold w-full flex items-center justify-center space-x-2";
@@ -41,26 +53,27 @@ export function OAuthModal({ isOpen, onClose }: OAuthModalProps) {
         <DialogTitle className="text-2xl font-semibold text-center text-white">Welcome</DialogTitle>
         <DialogDescription className="text-center mb-4 text-white">Sign in or sign up to continue</DialogDescription>
         <div className="flex flex-col space-y-3">
-          <Button onClick={handleGoogleLogin} className={buttonStyle}>
-            <LogIn size={18} />
+          <Button onClick={handleGoogleSignIn} className={buttonStyle}>
+            <Mail size={18} />
             <span>Continue with Google</span>
           </Button>
-          <Button onClick={handleAppleLogin} className={buttonStyle}>
+          <Button onClick={handleGithubSignIn} className={buttonStyle}>
             <Apple size={18} />
             <span>Continue with Apple</span>
           </Button>
-          <Button onClick={handleSamlSSOLogin} className={buttonStyle}>
+          <Button onClick={handleFacebookSignIn} className={buttonStyle}>
             <Key size={18} />
             <span>Single Sign-on (SAML SSO)</span>
           </Button>
           <Input
+            autoComplete="off"
             type="email"
             placeholder="Your email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setUser({ ...user, email: e.target.value })}
             className="w-full rounded-full"
           />
-          <Button onClick={handleEmailLogin} className={emailstyle}>
+          <Button onClick={handleEmailSignIn} className={emailstyle}>
             Continue with email
           </Button>
         </div>
